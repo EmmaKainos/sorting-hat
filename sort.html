@@ -1,0 +1,82 @@
+<html>
+<head>
+	<title>Team Sorting App</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<h1 style="text-align:center; margin-bottom:30px;">Team Sorting App</h1>
+	<div class="container">
+		<div class="left-panel">
+			<h3>Names Added</h3>
+			<ul class="name-list" id="nameList"></ul>
+		</div>
+		<div class="main-panel">
+			<form id="teamForm" autocomplete="off">
+				<label for="names">Enter name:</label><br>
+				<input type="text" id="names" name="names" placeholder="e.g. Alice" required>
+				<button type="button" id="addNameBtn">Add</button><br><br>
+				<label for="numTeams">Number of teams:</label>
+				<input type="number" id="numTeams" name="numTeams" min="2" value="2" required><br><br>
+				<button type="submit">Sort Teams</button>
+			</form>
+			<div class="error" id="errorMsg"></div>
+			<div class="wheel hidden" id="wheel">Spinning...</div>
+			<div class="team-list" id="teamList"></div>
+		</div>
+	</div>
+	<script>
+		// Team Sorting App Logic
+		const nameInput = document.getElementById('names');
+		const addNameBtn = document.getElementById('addNameBtn');
+		const nameListEl = document.getElementById('nameList');
+		const teamForm = document.getElementById('teamForm');
+		const errorMsg = document.getElementById('errorMsg');
+		let names = [];
+
+		// Add name to list (allow duplicates)
+		addNameBtn.addEventListener('click', () => {
+			const name = nameInput.value.trim();
+			if (name) {
+				names.push(name);
+				updateNameList();
+				nameInput.value = '';
+				errorMsg.textContent = '';
+			}
+		});
+
+		// Enter key adds name
+		nameInput.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter') {
+				e.preventDefault();
+				addNameBtn.click();
+			}
+		});
+
+		function updateNameList() {
+			nameListEl.innerHTML = '';
+			names.forEach(n => {
+				const li = document.createElement('li');
+				li.textContent = n;
+				nameListEl.appendChild(li);
+			});
+		}
+
+		// Prevent form submit on Add
+		teamForm.addEventListener('submit', function(e) {
+			e.preventDefault();
+			const numTeams = parseInt(document.getElementById('numTeams').value);
+			if (numTeams < 2) {
+				errorMsg.textContent = 'Minimum 2 teams required.';
+				return;
+			}
+			if (names.length < numTeams * 2) {
+				errorMsg.textContent = `Need at least ${numTeams * 2} names for ${numTeams} teams.`;
+				return;
+			}
+			errorMsg.textContent = '';
+			// Proceed to sort teams and show wheel (to be implemented)
+		});
+	</script>
+</body>
+</html>
+
