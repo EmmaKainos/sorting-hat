@@ -1,16 +1,24 @@
+.team-box h3 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.2em;
+    color: #2d6a8f;
+}
+
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
     margin: 40px;
-    background: linear-gradient(120deg, #f7b42c 0%, #fc575e 100%);
+    background: #f7f7fa;
     min-height: 100vh;
 }
 .container {
     max-width: 900px;
     margin: auto;
     display: flex;
-    background: rgba(255,255,255,0.95);
+    background: #fff;
     border-radius: 18px;
-    box-shadow: 0 8px 32px rgba(60,60,60,0.18);
+    box-shadow: 0 8px 32px rgba(60,60,60,0.10);
     padding: 32px 24px;
 }
 .left-panel {
@@ -18,12 +26,12 @@ body {
     margin-right: 30px;
 }
 .name-list {
-    background: #fffbe6;
+    background: #eaf6fb;
     padding: 15px;
     border-radius: 10px;
     min-height: 120px;
-    box-shadow: 0 2px 8px rgba(252, 87, 94, 0.08);
-    border: 1px solid #f7b42c;
+    box-shadow: 0 2px 8px rgba(60, 60, 60, 0.05);
+    border: 1px solid #b3e0f2;
 }
 .main-panel {
     flex: 1;
@@ -34,70 +42,93 @@ body {
     font-size: 1.1em;
     padding: 6px 10px;
     border-radius: 5px;
-    border: 1px solid #fc575e;
-    background: #fff6f6;
-    color: #fc575e;
+    border: 1px solid #b3e0f2;
+    background: #f7f7fa;
+    color: #2d6a8f;
 }
 #numTeams {
     font-family: 'Segoe UI', Arial, sans-serif;
     font-size: 1.1em;
     padding: 6px 10px;
     border-radius: 5px;
-    border: 1px solid #f7b42c;
+    border: 1px solid #b3e0f2;
     width: 60px;
-    background: #fffbe6;
-    color: #f7b42c;
+    background: #eaf6fb;
+    color: #2d6a8f;
 }
-#addNameBtn, #teamForm button[type="submit"] {
+ #addNameBtn, #teamForm button[type="submit"], #spinBtn, #stopBtn, #resetBtn {
     font-family: 'Segoe UI', Arial, sans-serif;
     font-size: 1.1em;
     padding: 6px 16px;
     border-radius: 5px;
-    border: 1px solid #fc575e;
-    background: linear-gradient(90deg, #fc575e 0%, #f7b42c 100%);
-    color: #fff;
+    border: 1px solid #b3e0f2;
+    background: #b3e0f2;
+    color: #2d6a8f;
     cursor: pointer;
     margin-left: 6px;
-    box-shadow: 0 2px 8px rgba(252, 87, 94, 0.12);
+    box-shadow: 0 2px 8px rgba(60, 60, 60, 0.08);
+    transition: background 0.2s;
+    margin-top: 10px;
+}
+#addNameBtn:hover, #teamForm button[type="submit"]:hover, #spinBtn:hover, #stopBtn:hover, #resetBtn:hover {
+    background: #7ec4e3;
     transition: background 0.2s;
 }
 #addNameBtn:hover, #teamForm button[type="submit"]:hover {
-    background: linear-gradient(90deg, #f7b42c 0%, #fc575e 100%);
+    background: #7ec4e3;
 }
 .team-list {
     margin-top: 20px;
-    background: #fffbe6;
+    background: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+}
+
+.teams-container {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.team-box {
+    background: #eaf6fb;
     border-radius: 10px;
     padding: 18px;
-    box-shadow: 0 2px 8px rgba(247, 180, 44, 0.08);
-    border: 1px solid #f7b42c;
+    box-shadow: 0 2px 8px rgba(60, 60, 60, 0.08);
+    border: 2px solid #b3e0f2;
+    min-width: 180px;
+    margin-bottom: 18px;
+    flex: 1 1 180px;
 }
 .wheel {
     margin: 30px auto;
     width: 300px;
     height: 300px;
     border-radius: 50%;
-    border: 6px solid #fc575e;
+    border: 6px solid #b3e0f2;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2em;
-    background: radial-gradient(circle, #fffbe6 60%, #fc575e 100%);
-    color: #fc575e;
-    box-shadow: 0 4px 24px rgba(252, 87, 94, 0.12);
+    background: #f7f7fa;
+    color: #2d6a8f;
+    box-shadow: 0 4px 24px rgba(60, 60, 60, 0.08);
 }
 .hidden {
     display: none;
 }
 .error {
-    color: #fc575e;
+    color: #2d6a8f;
     margin-top: 10px;
     font-weight: bold;
 }
 h1 {
-    color: #fc575e;
-    text-shadow: 1px 2px 8px #f7b42c44;
+    color: #2d6a8f;
+    text-shadow: none;
 }
 h3 {
-    color: #f7b42c;
+    color: #7ec4e3;
 }
