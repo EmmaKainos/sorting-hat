@@ -1,0 +1,103 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 40px;
+    background: linear-gradient(120deg, #f7b42c 0%, #fc575e 100%);
+    min-height: 100vh;
+}
+.container {
+    max-width: 900px;
+    margin: auto;
+    display: flex;
+    background: rgba(255,255,255,0.95);
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(60,60,60,0.18);
+    padding: 32px 24px;
+}
+.left-panel {
+    width: 220px;
+    margin-right: 30px;
+}
+.name-list {
+    background: #fffbe6;
+    padding: 15px;
+    border-radius: 10px;
+    min-height: 120px;
+    box-shadow: 0 2px 8px rgba(252, 87, 94, 0.08);
+    border: 1px solid #f7b42c;
+}
+.main-panel {
+    flex: 1;
+}
+#names {
+    width: 60%; min-width: 120px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 1.1em;
+    padding: 6px 10px;
+    border-radius: 5px;
+    border: 1px solid #fc575e;
+    background: #fff6f6;
+    color: #fc575e;
+}
+#numTeams {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 1.1em;
+    padding: 6px 10px;
+    border-radius: 5px;
+    border: 1px solid #f7b42c;
+    width: 60px;
+    background: #fffbe6;
+    color: #f7b42c;
+}
+#addNameBtn, #teamForm button[type="submit"] {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 1.1em;
+    padding: 6px 16px;
+    border-radius: 5px;
+    border: 1px solid #fc575e;
+    background: linear-gradient(90deg, #fc575e 0%, #f7b42c 100%);
+    color: #fff;
+    cursor: pointer;
+    margin-left: 6px;
+    box-shadow: 0 2px 8px rgba(252, 87, 94, 0.12);
+    transition: background 0.2s;
+}
+#addNameBtn:hover, #teamForm button[type="submit"]:hover {
+    background: linear-gradient(90deg, #f7b42c 0%, #fc575e 100%);
+}
+.team-list {
+    margin-top: 20px;
+    background: #fffbe6;
+    border-radius: 10px;
+    padding: 18px;
+    box-shadow: 0 2px 8px rgba(247, 180, 44, 0.08);
+    border: 1px solid #f7b42c;
+}
+.wheel {
+    margin: 30px auto;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    border: 6px solid #fc575e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    background: radial-gradient(circle, #fffbe6 60%, #fc575e 100%);
+    color: #fc575e;
+    box-shadow: 0 4px 24px rgba(252, 87, 94, 0.12);
+}
+.hidden {
+    display: none;
+}
+.error {
+    color: #fc575e;
+    margin-top: 10px;
+    font-weight: bold;
+}
+h1 {
+    color: #fc575e;
+    text-shadow: 1px 2px 8px #f7b42c44;
+}
+h3 {
+    color: #f7b42c;
+}
