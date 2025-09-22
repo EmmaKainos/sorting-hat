@@ -1,29 +1,342 @@
 // wheel.js
-// Handles wheel selection logic for Team Sorting App
+// Team Sorting App Logic
 
-/**
- * Get the name from the wheel segment where the arrow lands when stopped.
- * @param {number} rotation - The current rotation (radians) of the wheel.
- * @param {string[]} nameArr - Array of names on the wheel.
- * @returns {string} - The selected name.
- */
-function getSelectedWheelName(rotation, nameArr) {
-    if (!nameArr || nameArr.length === 0) return null;
-    // The arrow is at the top (0 radians), so calculate which segment is at the top
-    const sliceAngle = 2 * Math.PI / nameArr.length;
-    // Normalize rotation to [0, 2PI)
-    let normalized = rotation % (2 * Math.PI);
-    if (normalized < 0) normalized += 2 * Math.PI;
-    // Find the index of the segment at the arrow
-    let idx = Math.floor((2 * Math.PI - normalized) / sliceAngle) % nameArr.length;
-    return nameArr[idx];
-}
+// Wait for DOM to be loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM element references
+    const nameInput = document.getElementById('names');
+    const addNameBtn = document.getElementById('addNameBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const nameListEl = document.getElementById('nameList');
+    const teamForm = document.getElementById('teamForm');
+    const errorMsg = document.getElementById('errorMsg');
+    const wheelCanvas = document.getElementById('wheelCanvas');
+    const spinBtn = document.getElementById('spinBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const selectedNameDiv = document.getElementById('selectedName');
+    const teamListDiv = document.getElementById('teamList');
 
-// Example usage:
-// let selected = getSelectedWheelName(currentRotation, wheelNames);
-// Assign selected to team, update UI, etc.
+    // Application state variables
+    let spinning = false;
+    let spinInterval = null;
+    let spinRotation = 0;
+    let spinStartTime = 0;
+    let spinFrameInterval = 30;
+    let spinTotalFrames = 0;
+    let spinSelectedIdx = null;
+    let spinSelected = null;
+    let names = [];
+    let wheelNames = [];
+    let teams = [];
+    let currentTeamIndex = 0;
 
-// Export for use in sort.html
-if (typeof module !== 'undefined') {
-    module.exports = { getSelectedWheelName };
-}
+    /**
+     * Get the name from the wheel segment where the arrow lands when stopped.
+     * @param {number} rotation - The current rotation (radians) of the wheel.
+     * @param {string[]} nameArr - Array of names on the wheel.
+     * @returns {string} - The selected name.
+     */
+    function getSelectedWheelName(rotation, nameArr) {
+        if (!nameArr || nameArr.length === 0) return null;
+        const sliceAngle = 2 * Math.PI / nameArr.length;
+        
+        // Canvas arcs start at 0 radians (3 o'clock) and go clockwise
+        // Segment i spans from (i * sliceAngle) to ((i + 1) * sliceAngle)
+        // The arrow points at -π/2 radians (12 o'clock) in the original coordinate system
+        // When the wheel rotates by 'rotation', the arrow effectively points at (-π/2 - rotation)
+        
+        let arrowAngle = -Math.PI / 2 - rotation;
+        
+        // Normalize to [0, 2π) range
+        arrowAngle = arrowAngle % (2 * Math.PI);
+        if (arrowAngle < 0) arrowAngle += 2 * Math.PI;
+        
+        // Find which segment this angle falls into
+        let idx = Math.floor(arrowAngle / sliceAngle);
+        
+        // Ensure index is within bounds
+        idx = idx % nameArr.length;
+        
+        return nameArr[idx];
+    }
+
+    // Update name list display
+    function updateNameList() {
+        nameListEl.innerHTML = '';
+        // Remove names that have already been assigned to teams
+        const assigned = teams.flat();
+        names.forEach(n => {
+            if (!assigned.includes(n)) {
+                const li = document.createElement('li');
+                li.textContent = n;
+                nameListEl.appendChild(li);
+            }
+        });
+    }
+
+    // Update wheel display
+    function updateWheel() {
+        wheelNames = names.filter(n => !teams.flat().includes(n));
+        drawWheel(wheelNames);
+    }
+
+    // Draw wheel with optional rotation
+    function drawWheel(nameArr, rotation = 0) {
+        const ctx = wheelCanvas.getContext('2d');
+        ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+        const radius = wheelCanvas.width / 2;
+        const centerX = wheelCanvas.width / 2;
+        const centerY = wheelCanvas.height / 2;
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(rotation);
+        ctx.translate(-centerX, -centerY);
+        if (nameArr.length === 0) {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.closePath();
+            ctx.fillStyle = '#b3e0f2';
+            ctx.fill();
+        } else {
+            const sliceAngle = 2 * Math.PI / nameArr.length;
+            const colors = ['#b3e0f2', '#7ec4e3', '#eaf6fb', '#f7f7fa'];
+            for (let i = 0; i < nameArr.length; i++) {
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, i * sliceAngle, (i + 1) * sliceAngle);
+                ctx.closePath();
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                ctx.save();
+                ctx.strokeStyle = '#2d6a8f';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, i * sliceAngle, (i + 1) * sliceAngle);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.restore();
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(i * sliceAngle + sliceAngle / 2);
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#2d6a8f';
+                ctx.font = '16px Segoe UI';
+                ctx.fillText(nameArr[i] || '', radius - 10, 6);
+                ctx.restore();
+            }
+        }
+        ctx.restore();
+        // Draw center
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 40, 0, 2 * Math.PI);
+        ctx.fillStyle = '#eaf6fb';
+        ctx.fill();
+        ctx.strokeStyle = '#b3e0f2';
+        ctx.stroke();
+        // Draw pointer
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY - radius);
+        ctx.lineTo(centerX - 10, centerY - radius + 25);
+        ctx.lineTo(centerX + 10, centerY - radius + 25);
+        ctx.closePath();
+        ctx.fillStyle = '#2d6a8f';
+        ctx.fill();
+    }
+
+    // Display teams
+    function displayTeams(numTeams) {
+        renderTeamLists();
+    }
+
+    // Render team lists
+    function renderTeamLists() {
+        teamListDiv.innerHTML = '';
+        let teamsContainer = document.createElement('div');
+        teamsContainer.className = 'teams-container';
+        for (let i = 0; i < teams.length; i++) {
+            let teamDiv = document.createElement('div');
+            teamDiv.className = 'team-box';
+            teamDiv.id = `team-box-${i}`;
+            let teamTitle = document.createElement('h3');
+            teamTitle.textContent = `Team ${i + 1}`;
+            teamDiv.appendChild(teamTitle);
+            let teamUl = document.createElement('ul');
+            teamUl.id = `team${i}`;
+            teams[i].forEach(name => {
+                let li = document.createElement('li');
+                li.textContent = name;
+                teamUl.appendChild(li);
+            });
+            teamDiv.appendChild(teamUl);
+            teamsContainer.appendChild(teamDiv);
+        }
+        teamListDiv.appendChild(teamsContainer);
+    }
+
+    // Process assignment after wheel stops
+    function processAssignment(finalRotation = spinRotation) {
+        if (!spinSelected) {
+            errorMsg.textContent = 'Error: No name selected. Please press Spin first.';
+            teamListDiv.innerHTML = '';
+            renderTeamLists();
+            spinning = false;
+            spinBtn.disabled = false;
+            stopBtn.disabled = true;
+            return;
+        }
+        // Use wheel.js logic to select the name at the arrow
+        let selectedName = getSelectedWheelName(finalRotation, wheelNames);
+        selectedNameDiv.textContent = selectedName;
+        if (teams.length > 0) {
+            teams[currentTeamIndex].push(selectedName);
+            errorMsg.textContent = 'Assigned ' + selectedName + ' to team ' + (currentTeamIndex + 1);
+            console.log('Teams after assignment:', JSON.stringify(teams));
+        } else {
+            errorMsg.textContent = 'Error: Team assignment failed.';
+        }
+        teamListDiv.innerHTML = '';
+        renderTeamLists();
+        updateWheel();
+        updateNameList();
+        // Next team (round-robin)
+        currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+        spinning = false;
+        // Reset buttons for next spin if names remain
+        if (wheelNames.length > 0) {
+            spinBtn.disabled = false;
+            stopBtn.disabled = true;
+        } else {
+            spinBtn.disabled = true;
+            stopBtn.disabled = true;
+        }
+    }
+
+    // Event Listeners
+
+    // Reset button clears all names and resets UI
+    resetBtn.addEventListener('click', () => {
+        names = [];
+        teams = [];
+        wheelNames = [];
+        currentTeamIndex = 0;
+        nameInput.value = '';
+        errorMsg.textContent = '';
+        selectedNameDiv.textContent = '';
+        nameListEl.innerHTML = '';
+        teamListDiv.innerHTML = '';
+        drawWheel([]);
+        spinBtn.disabled = false;
+        stopBtn.disabled = true;
+    });
+
+    // Add name to list (allow duplicates)
+    addNameBtn.addEventListener('click', () => {
+        const name = nameInput.value.trim();
+        if (name) {
+            names.push(name);
+            updateNameList();
+            updateWheel();
+            nameInput.value = '';
+            errorMsg.textContent = '';
+        }
+    });
+
+    // Enter key adds name
+    nameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addNameBtn.click();
+        }
+    });
+
+    // Team form submission
+    teamForm.addEventListener('submit', function(e) {
+        spinBtn.disabled = false;
+        stopBtn.disabled = true;
+        e.preventDefault();
+        const numTeams = parseInt(document.getElementById('numTeams').value);
+        if (numTeams < 2) {
+            errorMsg.textContent = 'Minimum 2 teams required.';
+            return;
+        }
+        // Only require at least 2 names in the list, regardless of name input
+        if (names.filter(n => n.trim()).length < 2) {
+            errorMsg.textContent = 'Add at least 2 names before selecting teams.';
+            return;
+        }
+        if (names.filter(n => n.trim()).length < numTeams * 2) {
+            errorMsg.textContent = `Need at least ${numTeams * 2} names for ${numTeams} teams.`;
+            return;
+        }
+        errorMsg.textContent = '';
+        // Clear previous team assignments
+        teams = Array.from({length: numTeams}, () => []);
+        currentTeamIndex = 0;
+        // Clear team boxes
+        teamListDiv.innerHTML = '';
+        renderTeamLists();
+        console.log('Teams after sort:', JSON.stringify(teams));
+        updateWheel();
+        selectedNameDiv.textContent = '';
+        spinBtn.disabled = false;
+        stopBtn.disabled = true;
+    });
+
+    // Spin button starts spinning
+    spinBtn.addEventListener('click', function() {
+        if (!teams.length) {
+            errorMsg.textContent = 'Please select number of teams and click Sort Teams first.';
+            return;
+        }
+        if (wheelNames.length === 0) {
+            errorMsg.textContent = 'All names have been assigned.';
+            return;
+        }
+        errorMsg.textContent = '';
+        spinBtn.disabled = true;
+        stopBtn.disabled = false;
+        spinning = true;
+        spinSelectedIdx = Math.floor(Math.random() * wheelNames.length);
+        spinSelected = wheelNames[spinSelectedIdx];
+        spinRotation = 0;
+        spinStartTime = Date.now();
+        spinInterval = setInterval(() => {
+            spinRotation += 0.25; // fast spin
+            drawWheel(wheelNames, spinRotation);
+        }, spinFrameInterval);
+    });
+
+    // Stop button stops the wheel and assigns the name
+    stopBtn.addEventListener('click', function() {
+        stopBtn.disabled = true;
+        if (spinning && spinInterval) {
+            clearInterval(spinInterval); // Stop the fast spin
+            let baseSpins = 3;
+            const spinDuration = 3000;
+            const frameInterval = 30;
+            const totalFrames = Math.floor(spinDuration / frameInterval);
+            let i = 0;
+            let startRotation = spinRotation;
+            let interval = setInterval(() => {
+                let progress = i / totalFrames;
+                let ease = 1 - Math.pow(1 - progress, 3); // cubic ease out
+                let targetRotation = startRotation + (2 * Math.PI * baseSpins) + (2 * Math.PI * spinSelectedIdx / Math.max(1, wheelNames.length));
+                let rotation = startRotation + ease * (targetRotation - startRotation);
+                drawWheel(wheelNames, rotation);
+                i++;
+                if (i > totalFrames) {
+                    clearInterval(interval);
+                    drawWheel(wheelNames, targetRotation);
+                    processAssignment(targetRotation);
+                }
+            }, frameInterval);
+        } else {
+            // Always call processAssignment for error handling and assignment
+            processAssignment();
+        }
+    });
+
+    // Initial wheel draw
+    drawWheel([]);
+});
